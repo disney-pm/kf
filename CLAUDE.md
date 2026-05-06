@@ -85,9 +85,9 @@ If something nasty shows up:
 
 That's it. The wall updates next time someone refreshes.
 
-## Captcha
+## Bot protection
 
-To slow down bots, the form asks a Knowledge Fight trivia question (Celine's name, gay frogs, Andy's location, etc.) before submission. Plus a hidden honeypot field. No third-party captcha service needed.
+A hidden honeypot field on the form catches lazy bots (real users never fill it; bots that auto-fill every input do). There's also an optional "What's your bright spot, buddy?" prompt — purely sentimental, not validated. No third-party captcha service.
 
 ## Visual: drifting cartoons
 
