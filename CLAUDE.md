@@ -25,3 +25,17 @@ curl -s -X POST \
 ```
 
 Same rule applies for any other write operation against `disney-pm/kf` (issues, comments, merges): if the MCP/proxy path 403s, fall back to `curl` + `$GH_TOKEN` directly. Always redact the token when logging.
+
+## Proxy is read-only, not fully broken
+
+`git fetch origin` works through the proxy — only writes 403. Don't bypass the proxy for fetches; just push/PR-create via the PAT.
+
+## Sync the tracking ref after a PAT push
+
+A direct push to `github.com` leaves `origin/<branch>` stale, which trips the stop-hook's "unpushed commits" check. After every PAT push, run:
+
+```sh
+git fetch origin <branch>
+```
+
+to update the local tracking ref.
