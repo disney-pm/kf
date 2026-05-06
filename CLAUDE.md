@@ -11,3 +11,17 @@ git push "https://disney-pm:${GH_TOKEN}@github.com/disney-pm/kf.git" HEAD:refs/h
 ```
 
 `$GH_TOKEN` has admin/push on `disney-pm/kf` (verified). Don't loop on proxy 403s — go straight to the PAT. When logging the command, redact the token.
+
+## PRs: also use the PAT, not the GitHub button or MCP tools
+
+The web UI's "Compare & pull request" button fails for this repo, and `mcp__github__create_pull_request` returns `403 Resource not accessible by integration` (its app installation lacks `pull_requests: write`). Create PRs via the REST API with `$GH_TOKEN`:
+
+```sh
+curl -s -X POST \
+  -H "Authorization: Bearer $GH_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/disney-pm/kf/pulls \
+  -d '{"title":"...","head":"<branch>","base":"main","body":"..."}'
+```
+
+Same rule applies for any other write operation against `disney-pm/kf` (issues, comments, merges): if the MCP/proxy path 403s, fall back to `curl` + `$GH_TOKEN` directly. Always redact the token when logging.
