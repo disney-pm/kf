@@ -8,8 +8,8 @@
    Until both are filled in, the site falls back to local-only
    mode (notes only visible to whoever wrote them).
    ───────────────────────────────────────────────────────────── */
-const SUPABASE_URL      = ''; // e.g. 'https://abcd1234.supabase.co'
-const SUPABASE_ANON_KEY = ''; // e.g. 'eyJhbGciOi...'
+const SUPABASE_URL      = 'https://vzppbqbszvuvsbnlmesh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UlG2pYD0w6pjPj98IKlBvQ_JBSQBz4k';
 
 /* ============================================================ */
 
