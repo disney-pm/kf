@@ -17,7 +17,6 @@ const REMOTE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const LS_LOCAL_NOTES = 'kf_memorial_local_notes_v1';
 const LS_MINE        = 'kf_memorial_mine_v1';
 const LS_PENDING     = 'kf_memorial_pending_v1';
-const LS_COOLDOWN    = 'kf_memorial_cooldown_v1';
 
 /* ─── Seed notes (always shown, mixed hinged + unhinged) ───── */
 const SEED_NOTES = [
@@ -93,17 +92,6 @@ const SEED_NOTES = [
     body: "PROOF the show ended because the GLOBALISTS reached an impasse with the PODCASTERS at the SUMMIT inside MY HOUSE. I have receipts. The receipts are gay frogs.",
     createdAt: '2026-05-06T16:20:00Z'
   }
-];
-
-/* ─── Trivia captcha ──────────────────────────────────────── */
-const TRIVIA = [
-  { q: "What's Dan's cat's name?",                      a: ['celine'] },
-  { q: "Andy is on the air from ___",                   a: ['kansas'] },
-  { q: "Alex's favorite ___ are gay",                   a: ['frogs', 'frog'] },
-  { q: "Who's the bearded co-host?",                    a: ['jordan', 'jordann'] },
-  { q: "Who's the co-host with the glasses?",           a: ['dan', 'dan friesen', 'friesen'] },
-  { q: "Two words: name of the show",                   a: ['knowledge fight', 'knowledgefight'] },
-  { q: "InfoWars sells (one word, the supplement-y one)", a: ['supplements', 'supplement', 'brainforce', 'brain force'] }
 ];
 
 /* ============================================================
@@ -395,20 +383,10 @@ const fName       = document.getElementById('note-name');
 const fWhere      = document.getElementById('note-where');
 const fBody       = document.getElementById('note-body');
 const fCharCount  = document.getElementById('char-count');
-const fCaptchaQ   = document.getElementById('captcha-q');
-const fCaptchaA   = document.getElementById('captcha-a');
 const fHoneypot   = document.getElementById('hp-field');
 const fNote       = document.getElementById('form-note');
 const submitBtn   = document.getElementById('submit-btn');
 const clearMineBtn = document.getElementById('clear-mine');
-
-let activeTrivia = pickTrivia();
-function pickTrivia() {
-  const t = TRIVIA[Math.floor(Math.random() * TRIVIA.length)];
-  fCaptchaQ.textContent = `(${t.q})`;
-  fCaptchaA.value = '';
-  return t;
-}
 
 function updateCharCount() {
   fCharCount.textContent = `${fBody.value.length} / 800`;
@@ -422,14 +400,6 @@ function setNote(msg, kind) {
   if (kind) fNote.classList.add(`is-${kind}`);
 }
 
-function inCooldown() {
-  const until = lsGet(LS_COOLDOWN, 0);
-  return until > Date.now() ? until : 0;
-}
-function setCooldown(ms) {
-  lsSet(LS_COOLDOWN, Date.now() + ms);
-}
-
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   setNote('', null);
@@ -437,14 +407,6 @@ form.addEventListener('submit', async (e) => {
   // Honeypot
   if (fHoneypot.value.trim() !== '') {
     setNote("Bot detected. Try again later.", 'error');
-    return;
-  }
-
-  // Cooldown
-  const cd = inCooldown();
-  if (cd) {
-    const secs = Math.ceil((cd - Date.now()) / 1000);
-    setNote(`Slow down — try again in ${secs}s.`, 'error');
     return;
   }
 
@@ -458,24 +420,6 @@ form.addEventListener('submit', async (e) => {
     setNote("Note is over the 800-character limit.", 'error');
     return;
   }
-
-  // Trivia check
-  const ans = fCaptchaA.value.trim().toLowerCase();
-  if (!activeTrivia.a.includes(ans)) {
-    const wrong = (lsGet('kf_trivia_wrong', 0) || 0) + 1;
-    lsSet('kf_trivia_wrong', wrong);
-    if (wrong >= 3) {
-      setCooldown(60_000);
-      lsSet('kf_trivia_wrong', 0);
-      setNote("Too many wrong answers. 60 seconds in the corner.", 'error');
-    } else {
-      setNote(`Not quite. Hint: it's a Knowledge Fight thing. (${3 - wrong} tries left)`, 'error');
-    }
-    activeTrivia = pickTrivia();
-    fCaptchaA.focus();
-    return;
-  }
-  lsSet('kf_trivia_wrong', 0);
 
   const tone = (form.querySelector('input[name="tone"]:checked') || {}).value || 'hinged';
   const draft = {
@@ -519,7 +463,6 @@ form.addEventListener('submit', async (e) => {
   submitBtn.disabled = false;
   form.reset();
   updateCharCount();
-  activeTrivia = pickTrivia();
 
   const messages = {
     'remote':      "Pinned to the wall. Thanks for sharing.",
